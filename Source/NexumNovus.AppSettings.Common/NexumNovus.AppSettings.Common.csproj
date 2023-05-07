@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Build">
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package">
+    <Product>NexumNovus.AppSettings.Common</Product>
+    <Description>A shared package used by the NexumNovus.AppSettings.* packages. Do not install this package manually, it will be added as a prerequisite by other packages that require it.</Description>
+    <PackageTags>nexumnovus;appsettings</PackageTags>
+  </PropertyGroup>
+
+</Project>
