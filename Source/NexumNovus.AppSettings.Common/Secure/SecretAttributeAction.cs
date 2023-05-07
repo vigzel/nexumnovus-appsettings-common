@@ -1,4 +1,4 @@
-﻿namespace NexumNovus.AppSettings.Common.Secure;
+namespace NexumNovus.AppSettings.Common.Secure;
 
 /// <summary>
 /// Enum action specifying what action to take on properties with <see cref="SecretSettingAttribute" /> attribute.
@@ -14,4 +14,9 @@ public enum SecretAttributeAction
   /// Add sufix *.
   /// </summary>
   MarkWithStar,
+
+  /// <summary>
+  /// Add sufix * and cryptographically protects value.
+  /// </summary>
+  MarkWithStarAndProtect,
 }
