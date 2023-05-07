@@ -1,6 +1,10 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NexumNovus.AppSettings.Common.Test")]
 
 namespace NexumNovus.AppSettings.Common;
+
+using System;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -14,10 +18,10 @@ internal sealed class PeriodicChangeWatcher : IChangeWatcher, IDisposable
   private readonly TimeSpan _refreshInterval;
   private readonly ILogger? _logger;
 
-  private Timer? _timer;
+  private IDisposable? _timerSubscription;
   private bool _timerInitialized;
   private object _timerLock = new();
-  private readonly Func<Timer?> _timerFactory;
+  private readonly Func<IDisposable?> _timerFactory;
 
   private ChangeTokenInfo _changeTokenInfo;
 
@@ -28,7 +32,8 @@ internal sealed class PeriodicChangeWatcher : IChangeWatcher, IDisposable
   /// <param name="initialState">Initial state. Optional.</param>
   /// <param name="refreshInterval">Refresh interval. Default is 60 seconds.</param>
   /// <param name="logger">Logger. Optional.</param>
-  public PeriodicChangeWatcher(Func<string?> getNewState, string? initialState = null, TimeSpan? refreshInterval = null, ILogger? logger = null)
+  /// <param name="scheduler">Scheduler. Optional, this parameter is used in unit tests.</param>
+  public PeriodicChangeWatcher(Func<string?> getNewState, string? initialState = null, TimeSpan? refreshInterval = null, ILogger? logger = null, IScheduler? scheduler = null)
   {
     _getNewState = getNewState;
     _state = initialState;
@@ -43,14 +48,18 @@ internal sealed class PeriodicChangeWatcher : IChangeWatcher, IDisposable
         return null;
       }
 
-      return new Timer(CheckHasChanged, state: null, dueTime: _refreshInterval, period: _refreshInterval);
+      var timerScheduler = scheduler ?? Scheduler.Default;
+
+      return Observable
+        .Interval(_refreshInterval, timerScheduler)
+        .Subscribe(CheckHasChanged);
     };
   }
 
   /// <inheritdoc/>
   public IChangeToken Watch()
   {
-    LazyInitializer.EnsureInitialized(ref _timer, ref _timerInitialized, ref _timerLock, _timerFactory);
+    LazyInitializer.EnsureInitialized(ref _timerSubscription, ref _timerInitialized, ref _timerLock, _timerFactory);
     return _changeTokenInfo.ChangeToken;
   }
 
@@ -61,7 +70,7 @@ internal sealed class PeriodicChangeWatcher : IChangeWatcher, IDisposable
     UpdateState(newState);
   }
 
-  private void CheckHasChanged(object? state)
+  private void CheckHasChanged(long value)
   {
     _logger?.LogTrace("[PeriodicChangeWatcher] Checking for changes...");
 
@@ -144,7 +153,7 @@ internal sealed class PeriodicChangeWatcher : IChangeWatcher, IDisposable
 
     if (disposing)
     {
-      _timer?.Dispose();
+      _timerSubscription?.Dispose();
       _changeTokenInfo.Dispose();
     }
 

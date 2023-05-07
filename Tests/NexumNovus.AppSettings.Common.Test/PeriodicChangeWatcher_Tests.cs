@@ -1,40 +1,39 @@
 namespace NexumNovus.AppSettings.Common.Test;
+
+using Microsoft.Reactive.Testing;
+
 public class PeriodicChangeWatcher_Tests
 {
-  private const int RefreshInterval = 50;
-
   [Fact]
-  public async Task Should_Detect_Change_When_New_State_Is_Returned_Async()
+  public void Should_Detect_Change_When_New_State_Is_Returned()
   {
     // Arrange
     var tester = new Mock<ITest>();
     tester.Setup(x => x.GetNewState()).Returns("newState");
-    var initialState = "initial";
-    var refreshInterval = TimeSpan.FromMilliseconds(RefreshInterval);
-    var sut = new PeriodicChangeWatcher(tester.Object.GetNewState, initialState, refreshInterval);
+    var testScheduler = new TestScheduler();
+    var sut = new PeriodicChangeWatcher(tester.Object.GetNewState, "initialState", TimeSpan.FromSeconds(1), scheduler: testScheduler);
 
     // Act
     var changeToken = sut.Watch();
-    await Task.Delay(RefreshInterval * 4).ConfigureAwait(false);
+    testScheduler.AdvanceBy(TimeSpan.FromSeconds(3.5).Ticks);
 
     // Assert
     changeToken.HasChanged.Should().BeTrue();
-    tester.Verify(x => x.GetNewState(), Times.AtLeast(3));
+    tester.Verify(x => x.GetNewState(), Times.Exactly(3));
   }
 
   [Fact]
-  public async Task Should_Detect_No_Change_When_Identical_State_Is_Returned_Async()
+  public void Should_Detect_No_Change_When_Identical_State_Is_Returned()
   {
     // Arrange
     var tester = new Mock<ITest>();
-    tester.Setup(x => x.GetNewState()).Returns("oldState");
-    var initialState = "oldState";
-    var refreshInterval = TimeSpan.FromMilliseconds(RefreshInterval);
-    var sut = new PeriodicChangeWatcher(tester.Object.GetNewState, initialState, refreshInterval);
+    tester.Setup(x => x.GetNewState()).Returns("initialState");
+    var testScheduler = new TestScheduler();
+    var sut = new PeriodicChangeWatcher(tester.Object.GetNewState, "initialState", TimeSpan.FromSeconds(1), scheduler: testScheduler);
 
     // Act
     var changeToken = sut.Watch();
-    await Task.Delay(RefreshInterval * 2).ConfigureAwait(false);
+    testScheduler.AdvanceBy(TimeSpan.FromSeconds(1.5).Ticks);
 
     // Assert
     changeToken.HasChanged.Should().BeFalse();
@@ -46,13 +45,12 @@ public class PeriodicChangeWatcher_Tests
   {
     // Arrange
     var tester = new Mock<ITest>();
-    tester.Setup(x => x.GetNewState()).Returns("oldState");
-    var initialState = "oldState";
-    var refreshInterval = TimeSpan.FromMilliseconds(RefreshInterval);
-    var sut = new PeriodicChangeWatcher(tester.Object.GetNewState, initialState, refreshInterval);
+    var testScheduler = new TestScheduler();
+    var sut = new PeriodicChangeWatcher(tester.Object.GetNewState, "initialState", TimeSpan.Zero, scheduler: testScheduler);
 
     // Act
     var changeToken = sut.Watch();
+    testScheduler.AdvanceBy(TimeSpan.FromMinutes(10).Ticks);
     sut.TriggerChange("newState");
 
     // Assert
@@ -65,14 +63,13 @@ public class PeriodicChangeWatcher_Tests
   {
     // Arrange
     var tester = new Mock<ITest>();
-    tester.Setup(x => x.GetNewState()).Returns("oldState");
-    var initialState = "oldState";
-    var refreshInterval = TimeSpan.FromMilliseconds(RefreshInterval);
-    var sut = new PeriodicChangeWatcher(tester.Object.GetNewState, initialState, refreshInterval);
+    var testScheduler = new TestScheduler();
+    var sut = new PeriodicChangeWatcher(tester.Object.GetNewState, "initialState", TimeSpan.Zero, scheduler: testScheduler);
 
     // Act
     var changeToken = sut.Watch();
-    sut.TriggerChange("oldState");
+    testScheduler.AdvanceBy(TimeSpan.FromMinutes(10).Ticks);
+    sut.TriggerChange("initialState");
 
     // Assert
     changeToken.HasChanged.Should().BeFalse();
