@@ -5,6 +5,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Reactive.Testing" Version="5.0.0" />
+  </ItemGroup>
+
   <ItemGroup Label="Project References">
     <ProjectReference Include="..\..\Source\NexumNovus.AppSettings.Common\NexumNovus.AppSettings.Common.csproj" />
   </ItemGroup>
