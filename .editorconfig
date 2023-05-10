@@ -452,7 +452,8 @@ dotnet_diagnostic.CA1305.severity = none
 dotnet_diagnostic.CA1310.severity = none
 # Debug.Assert should provide message text
 dotnet_diagnostic.SA1405.severity = none
-
+# Use expression body for lambda expression
+dotnet_diagnostic.IDE0053.severity = none
 
 
 
