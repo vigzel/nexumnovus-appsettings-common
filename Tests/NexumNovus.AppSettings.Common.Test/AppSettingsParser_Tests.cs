@@ -98,6 +98,41 @@ public class AppSettingsParser_Tests
     result.Should().Be(jsonString);
   }
 
+  [Fact]
+  public void Should_Convert_Settings_Dictionary_To_Json()
+  {
+    // Arrange
+    var dict = new Dictionary<string, string?>
+    {
+        { "Logging", "Warning" },
+        { "AllowedHosts", null },
+        { "ConnectionStrings:DefaultConnection", "MyDbConnection" },
+        { "ConnectionStrings:Data:0", "A" },
+        { "ConnectionStrings:Data:1", "B" },
+        { "ConnectionStrings:Data:2", "C" },
+    };
+
+    var jsonString = /*lang=json*/
+@"{
+  ""Logging"": ""Warning"",
+  ""AllowedHosts"": null,
+  ""ConnectionStrings"": {
+    ""DefaultConnection"": ""MyDbConnection"",
+    ""Data"": [
+      ""A"",
+      ""B"",
+      ""C""
+    ]
+  }
+}";
+
+    // Act
+    var result = AppSettingsParser.ConvertSettingsDictionaryToJson(dict);
+
+    // Assert
+    result.Should().Be(jsonString);
+  }
+
   private sealed class TestClass
   {
     public string Name { get; set; }

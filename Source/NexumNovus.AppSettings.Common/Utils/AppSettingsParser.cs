@@ -66,4 +66,88 @@ public static class AppSettingsParser
 
     return JsonConvert.SerializeObject(settings, jsonSerializerSettings);
   }
+
+  /// <summary>
+  /// Converts settings dictionary to json string.
+  /// </summary>
+  /// <param name="settings">Settings dictionary where keys are delimited with ":".</param>
+  /// <returns>Json string.</returns>
+  public static string ConvertSettingsDictionaryToJson(Dictionary<string, string?> settings)
+  {
+    var jsonProperties = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase); // dictionary of dictionaries
+
+    foreach (var (key, value) in settings)
+    {
+      var parts = key.Split(':');
+      AddJsonProperty(jsonProperties, parts, value);
+    }
+
+    // Find and transform dictionaries with sequential numbered keys to arrays
+    foreach (var prop in jsonProperties.Keys)
+    {
+      if (jsonProperties[prop] is Dictionary<string, object?> dict)
+      {
+        FindArrays(dict, jsonProperties, prop);
+      }
+    }
+
+    // Create JSON string from objects
+    var jsonString = SerializeObject(jsonProperties);
+    return jsonString;
+  }
+
+  private static void AddJsonProperty(Dictionary<string, object?> parent, string[] parts, string? value)
+  {
+    var propertyName = parts[0];
+    var remainingParts = parts.Skip(1).ToArray();
+
+    if (!remainingParts.Any())
+    {
+      parent[propertyName] = value;
+      return;
+    }
+
+    if (!parent.TryGetValue(propertyName, out var propertyValue))
+    {
+      propertyValue = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+      parent[propertyName] = propertyValue;
+    }
+
+    var nestedProperty = (Dictionary<string, object?>)propertyValue!;
+    AddJsonProperty(nestedProperty, remainingParts, value);
+  }
+
+  // Transforms dictionaries with sequential numbered keys to arrays
+  private static void FindArrays(Dictionary<string, object?> properties, Dictionary<string, object?> parent, string parentName)
+  {
+    if (properties.ContainsKey("0") && IsSequentialListOfNumbers(properties.Keys))
+    {
+      parent[parentName] = properties.OrderBy(x => x.Key).Select(x => x.Value).ToArray();
+    }
+
+    foreach (var prop in properties.Keys)
+    {
+      if (properties[prop] is Dictionary<string, object?> dict)
+      {
+        FindArrays(dict, properties, prop);
+      }
+    }
+  }
+
+  private static bool IsSequentialListOfNumbers(IEnumerable<string> data)
+  {
+    var numbers = new bool[data.Count()];
+
+    foreach (var item in data)
+    {
+      if (!int.TryParse(item, out var num) || num < 0 || num >= numbers.Length || numbers[num])
+      {
+        return false;
+      }
+
+      numbers[num] = true;
+    }
+
+    return true;
+  }
 }

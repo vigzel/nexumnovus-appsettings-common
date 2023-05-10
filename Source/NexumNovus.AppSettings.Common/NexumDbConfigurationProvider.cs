@@ -54,7 +54,7 @@ public abstract class NexumDbConfigurationProvider<T> : ConfigurationProvider, I
     {
       var dbSettings = GetSettingsFromDb();
 
-      var settings = new Dictionary<string, string?>();
+      var settings = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
       foreach (var sett in dbSettings)
       {
         var key = sett.Key;
