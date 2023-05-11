@@ -60,21 +60,21 @@ public static class ConfigurationExtensions
   }
 
   /// <summary>
-  /// Registers and binds options and options validator IValidateOptionsCustom&lt;TOptions&gt;.
-  /// Options are expected to implement IValidateOptionsCustom&lt;TOptions&gt;.
-  /// Options validation can be started using IOptions&lt;ValidatorOptionsCustom&gt;.
+  /// Registers and binds options and options validator IValidateOptions&lt;TOptions&gt;.
+  /// Options are expected to implement IValidateOptions&lt;TOptions&gt;.
+  /// Options validation can be started using IOptions&lt;ValidatorOptions&gt;.
   /// </summary>
   /// <typeparam name="TOptions">The options type to be configured.</typeparam>
   /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
   /// <param name="configSectionName">Configration section name.</param>
   /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that configure calls can be chained in it.</returns>
   public static OptionsBuilder<TOptions> AddOptionsWithLateValidator<TOptions>(this IServiceCollection services, string configSectionName)
-    where TOptions : class, ILateValidateOptions<TOptions>
+    where TOptions : class, IValidateOptions<TOptions>
     => services.AddOptionsWithLateValidator<TOptions, TOptions>(configSectionName);
 
   /// <summary>
-  /// Registers and binds options and options validator IValidateOptionsCustom&lt;TOptions&gt;.
-  /// Options validation can be started using IOptions&lt;ValidatorOptionsCustom&gt;.
+  /// Registers and binds options and options validator IValidateOptions&lt;TOptions&gt;.
+  /// Options validation can be started using IOptions&lt;ValidatorOptions&gt;.
   /// </summary>
   /// <typeparam name="TOptions">The options type to be configured.</typeparam>
   /// <typeparam name="TOptionsValidator">The options validator type.</typeparam>
@@ -83,21 +83,21 @@ public static class ConfigurationExtensions
   /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that configure calls can be chained in it.</returns>
   public static OptionsBuilder<TOptions> AddOptionsWithLateValidator<TOptions, TOptionsValidator>(this IServiceCollection services, string configSectionName)
     where TOptions : class
-    where TOptionsValidator : class, ILateValidateOptions<TOptions>
+    where TOptionsValidator : class, IValidateOptions<TOptions>
   {
-    services.AddSingleton<ILateValidateOptions<TOptions>, TOptionsValidator>();
+    services.AddSingleton<IValidateOptions<TOptions>, TOptionsValidator>();
 
     var optionsBuilder = services
       .AddOptions<TOptions>()
       .BindConfiguration(configSectionName);
 
     // following code is equivalent to ValidateOnStart, but this way it gives me more control on when to call validation
-    // this enables me to inject IOptions<ValidatorOptionsCustom> that will contain all registered validators
+    // this enables me to inject IOptions<LateValidatorOptions> that will contain all registered validators
     services.AddOptions<LateValidatorOptions>()
-      .Configure<ILateValidateOptions<TOptions>, IOptionsMonitor<TOptions>>((vo, validator, options) =>
+      .Configure<IValidateOptions<TOptions>, IOptionsMonitor<TOptions>>((vo, validator, options) =>
       {
-        // configure is called when IOptions<ValidatorOptionsCustom>.Value is callled.
-        // configure will just fill ValidatorOptionsCustom.Validators dictionary with all option validators
+        // configure is called when IOptions<LateValidatorOptions>.Value is callled.
+        // configure will just fill LateValidatorOptions.Validators dictionary with all option validators
         // calling method is then expected to call "validate" on each member of that dictionary
         vo.Validators[(typeof(TOptions), optionsBuilder.Name)] = () =>
         {
