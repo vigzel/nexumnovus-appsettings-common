@@ -5,7 +5,7 @@ using System.Collections.Generic;
 /// <summary>
 /// Holds a map of each pair of a) options type and b) options name to a method that forces its evaluation.
 /// </summary>
-public class LateValidatorOptions
+public class ValidatorOptions
 {
   /// <summary>
   /// Gets map that contains each pair of a) options type and b) options name to a method that forces its evaluation, e.g. IOptionsMonitor&lt;TOptions&gt;.Get(name).
