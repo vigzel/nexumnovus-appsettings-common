@@ -454,7 +454,8 @@ dotnet_diagnostic.CA1310.severity = none
 dotnet_diagnostic.SA1405.severity = none
 # Use expression body for lambda expression
 dotnet_diagnostic.IDE0053.severity = none
-
+# Generic type constraints should be on their own line
+dotnet_diagnostic.SA1127.severity = none
 
 
 
