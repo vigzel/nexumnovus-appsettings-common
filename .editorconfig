@@ -456,7 +456,8 @@ dotnet_diagnostic.SA1405.severity = none
 dotnet_diagnostic.IDE0053.severity = none
 # Generic type constraints should be on their own line
 dotnet_diagnostic.SA1127.severity = none
-
+# Propery documentation should begin with Gets or sets...
+dotnet_diagnostic.SA1623.severity = none
 
 
 ##########################################
