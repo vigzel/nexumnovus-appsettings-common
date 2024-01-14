@@ -1,6 +1,6 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NexumNovus.AppSettings.Common.Test")]
 
-namespace NexumNovus.AppSettings.Common;
+namespace NexumNovus.AppSettings.Common.Utils;
 
 using System;
 using System.Reactive.Concurrency;
@@ -90,20 +90,17 @@ internal sealed class PeriodicChangeWatcher : IChangeWatcher, IDisposable
 
   private void UpdateState(string? newState)
   {
-    if (_state != newState)
-    {
-      _logger?.LogTrace($"[PeriodicChangeWatcher] State changed. PreviousState = {_state}, NewState = {newState}.");
+    _logger?.LogTrace($"[PeriodicChangeWatcher] Updating state. PreviousState = {_state}, NewState = {newState}.");
 
-      var changeTokenInfo = _changeTokenInfo;
+    var changeTokenInfo = _changeTokenInfo;
 
-      // create new token (because we are canceling source of current one)
-      // important to do this before triggering change on the old token!!!
-      // ako bi tu samo updateao state onda bi mi se ChangeToken.OnChange zavrtio u beskonacnoj petlji jer mu je cancelation token cancelan
-      _changeTokenInfo = new ChangeTokenInfo();
+    // create new token (because we are canceling source of current one)
+    // important to do this before triggering change on the old token!!!
+    // ako bi tu samo updateao state onda bi mi se ChangeToken.OnChange zavrtio u beskonacnoj petlji jer mu je cancelation token cancelan
+    _changeTokenInfo = new ChangeTokenInfo();
 
-      _state = newState;
-      changeTokenInfo.TriggerChange();
-    }
+    _state = newState;
+    changeTokenInfo.TriggerChange();
   }
 
   private readonly struct ChangeTokenInfo : IDisposable

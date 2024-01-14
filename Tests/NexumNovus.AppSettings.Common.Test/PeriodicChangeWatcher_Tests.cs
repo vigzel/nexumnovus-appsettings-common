@@ -1,6 +1,7 @@
 namespace NexumNovus.AppSettings.Common.Test;
 
 using Microsoft.Reactive.Testing;
+using NexumNovus.AppSettings.Common.Utils;
 
 public class PeriodicChangeWatcher_Tests
 {
@@ -59,7 +60,7 @@ public class PeriodicChangeWatcher_Tests
   }
 
   [Fact]
-  public void Should_Not_Trigger_Change_When_Called_With_Identical_State()
+  public void Should_Trigger_Change_When_Called_With_Identical_State()
   {
     // Arrange
     var tester = new Mock<ITest>();
@@ -72,7 +73,7 @@ public class PeriodicChangeWatcher_Tests
     sut.TriggerChange("initialState");
 
     // Assert
-    changeToken.HasChanged.Should().BeFalse();
+    changeToken.HasChanged.Should().BeTrue();
     tester.Verify(x => x.GetNewState(), Times.Never);
   }
 
