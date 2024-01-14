@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using NexumNovus.AppSettings.Common.Secure;
+using NexumNovus.AppSettings.Common.Utils;
 
 /// <summary>
 /// Represents a base class for database based <see cref="ConfigurationProvider"/>.
@@ -60,7 +61,7 @@ public abstract class NexumDbConfigurationProvider<T> : ConfigurationProvider, I
         var key = sett.Key;
         var value = sett.Value;
 
-        if (key.EndsWith("*"))
+        if (key.EndsWith('*'))
         {
           key = key[..^1];
           value = UnprotectSafe(key, value);

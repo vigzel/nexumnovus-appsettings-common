@@ -95,7 +95,7 @@ public static class AppSettingsParser
     var propertyName = parts[0];
     var remainingParts = parts.Skip(1).ToArray();
 
-    if (!remainingParts.Any())
+    if (remainingParts.Length == 0)
     {
       parent[propertyName] = value;
       return;
